@@ -1,64 +1,9 @@
-@import "~bootstrap/scss/bootstrap";
+@import 'variables';
+@import 'base';
+@import 'layout';
+@import 'components';
 
-// Variables personnalisées
-:root {
-    --primary: #3498db;
-    --secondary: #2c3e50;
-    --success: #27ae60;
-    --danger: #e74c3c;
-    --warning: #f39c12;
-    --info: #17a2b8;
-}
+@import 'pages/login';
+@import 'pages/dashboard';
 
-// Styles globaux
-body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #f8f9fa;
-    color: #2c3e50;
-}
-
-.btn {
-    border-radius: 8px;
-    font-weight: 500;
-    transition: all 0.2s ease;
-}
-
-.card {
-    border: none;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-// Dashboard styles
-.dashboard-header {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-    color: white;
-    padding: 2rem 0;
-    margin-bottom: 2rem;
-
-    h1 {
-        font-weight: 700;
-        margin: 0;
-    }
-}
-
-// Login page styles  
-.login-page {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-    min-height: 100vh;
-
-    .card {
-        border-radius: 16px;
-        overflow: hidden;
-    }
-
-    .btn-primary {
-        background: var(--primary);
-        border: none;
-
-        &:hover {
-            background: color-mix(in srgb, var(--primary) 90%, black);
-            transform: translateY(-1px);
-        }
-    }
-}
+@import 'responsive';

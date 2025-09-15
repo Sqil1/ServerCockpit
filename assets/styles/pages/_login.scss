@@ -1,0 +1,95 @@
+// === STYLES POUR LA PAGE DE CONNEXION ===
+
+.login-container {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: $border-radius-xl;
+  padding: 40px;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+
+  // Barre colorée en haut
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, $primary-color, $secondary-color);
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 8px;
+    color: $text-color;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: $light-gray;
+    margin-bottom: 30px;
+    font-size: 0.95rem;
+  }
+}
+
+// Logo/Icône en haut
+.login-logo {
+  text-align: center;
+  margin-bottom: 25px;
+
+  i {
+    font-size: 3rem;
+    background: linear-gradient(135deg, $primary-color, $secondary-color);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+// Lien "Mot de passe oublié"
+.forgot-password {
+  text-align: center;
+  margin-top: $form-spacing;
+
+  a {
+    color: $primary-color;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: $secondary-color;
+      text-decoration: underline;
+    }
+  }
+}
+
+// Messages utilisateur connecté
+.user-info {
+  background: #e3f2fd;
+  padding: 15px;
+  border-radius: $border-radius-lg;
+  margin-bottom: $form-spacing;
+  border-left: 4px solid $info-color;
+
+  p {
+    margin: 0;
+    color: #1976d2;
+    font-size: 0.9rem;
+  }
+
+  a {
+    color: #1976d2;
+    font-weight: 500;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

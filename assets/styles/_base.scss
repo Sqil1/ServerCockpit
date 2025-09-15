@@ -1,0 +1,19 @@
+// Reset simple
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  color: $text-color;
+  // Design pour la page de connexion
+  background: linear-gradient(135deg, $primary-color 0%, $secondary-color 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $container-padding;
+}
