@@ -1,0 +1,97 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+    <div class="login-container">
+        <!-- Logo/Icône -->
+        <div class="login-logo">
+            <img src="{{ asset('build/logo.svg') }}" alt="ServerCockpit" width="80">
+        </div>
+
+        <!-- Titre -->
+        <h1>Connexion</h1>
+        <p class="subtitle">Accédez à votre espace personnel</p>
+
+        <form method="post">
+            <!-- Messages d'erreur -->
+            {% if error %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                </div>
+            {% endif %}
+
+            <!-- Utilisateur déjà connecté -->
+            {% if app.user %}
+                <div class="user-info">
+                    <p>
+                        <i class="fas fa-user"></i>
+                        Vous êtes connecté en tant que {{ app.user.userIdentifier }},
+                        <a href="{{ path('app_logout') }}">Se déconnecter</a>
+                    </p>
+                </div>
+            {% endif %}
+
+            <!-- Champ Email -->
+            <div class="form-group">
+                <label for="username">
+                    <i class="fas fa-envelope"></i>
+                    Adresse email
+                </label>
+                <input type="email"
+                       value="{{ last_username }}"
+                       name="_username"
+                       id="username"
+                       class="form-control"
+                       placeholder="votre@email.com"
+                       autocomplete="email"
+                       required
+                       autofocus>
+            </div>
+
+            <!-- Champ Mot de passe -->
+            <div class="form-group">
+                <label for="password">
+                    <i class="fas fa-lock"></i>
+                    Mot de passe
+                </label>
+                <input type="password"
+                       name="_password"
+                       id="password"
+                       class="form-control"
+                       placeholder="••••••••"
+                       autocomplete="current-password"
+                       required>
+            </div>
+
+            <!-- Token CSRF -->
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+            <!-- Se souvenir de moi -->
+            <div class="remember-me">
+                <input type="checkbox" name="_remember_me" id="_remember_me">
+                <label for="_remember_me">Se souvenir de moi</label>
+            </div>
+
+            <!-- Bouton de connexion -->
+            <button class="btn btn-primary" type="submit">
+                <i class="fas fa-sign-in-alt"></i>
+                Se connecter
+            </button>
+        </form>
+
+        <!-- Lien mot de passe oublié -->
+        <div class="forgot-password">
+            <a href="#">
+                <i class="fas fa-question-circle"></i>
+                Mot de passe oublié ?
+            </a>
+        </div>
+    </div>
+{% endblock %}

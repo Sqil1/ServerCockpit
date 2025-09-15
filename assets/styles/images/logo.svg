@@ -1,0 +1,69 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="serverGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="screenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4facfe;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00f2fe;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="60" cy="60" r="55" fill="url(#serverGradient)" opacity="0.1"/>
+  
+  <!-- Server rack base -->
+  <rect x="25" y="35" width="70" height="50" rx="6" fill="url(#serverGradient)" opacity="0.9"/>
+  
+  <!-- Server rack details -->
+  <rect x="30" y="40" width="60" height="8" rx="2" fill="#ffffff" opacity="0.3"/>
+  <rect x="30" y="52" width="60" height="8" rx="2" fill="#ffffff" opacity="0.3"/>
+  <rect x="30" y="64" width="60" height="8" rx="2" fill="#ffffff" opacity="0.3"/>
+  <rect x="30" y="76" width="60" height="8" rx="2" fill="#ffffff" opacity="0.3"/>
+  
+  <!-- LED indicators -->
+  <circle cx="85" cy="44" r="2" fill="#4ade80"/>
+  <circle cx="85" cy="56" r="2" fill="#4ade80"/>
+  <circle cx="85" cy="68" r="2" fill="#fbbf24"/>
+  <circle cx="85" cy="80" r="2" fill="#4ade80"/>
+  
+  <!-- Cockpit screen -->
+  <rect x="40" y="20" width="40" height="25" rx="4" fill="url(#screenGradient)" filter="url(#glow)"/>
+  <rect x="43" y="23" width="34" height="19" rx="2" fill="#1a1a1a"/>
+  
+  <!-- Screen content - dashboard elements -->
+  <rect x="45" y="25" width="8" height="4" rx="1" fill="#4ade80" opacity="0.8"/>
+  <rect x="55" y="25" width="8" height="4" rx="1" fill="#fbbf24" opacity="0.8"/>
+  <rect x="65" y="25" width="10" height="4" rx="1" fill="#667eea" opacity="0.8"/>
+  
+  <!-- Graph lines -->
+  <polyline points="45,32 50,30 55,34 60,29 65,31 70,28 75,32" 
+            stroke="#4facfe" stroke-width="1.5" fill="none" opacity="0.9"/>
+  
+  <!-- Screen reflection -->
+  <rect x="43" y="23" width="34" height="10" rx="2" fill="url(#screenGradient)" opacity="0.1"/>
+  
+  <!-- Connection cables -->
+  <path d="M60 45 Q65 50 70 55" stroke="#667eea" stroke-width="2" fill="none" opacity="0.6"/>
+  <path d="M60 45 Q55 50 50 55" stroke="#764ba2" stroke-width="2" fill="none" opacity="0.6"/>
+  
+  <!-- Base stand -->
+  <rect x="45" y="85" width="30" height="4" rx="2" fill="url(#serverGradient)" opacity="0.7"/>
+  
+  <!-- Antenna/signal -->
+  <line x1="95" y1="30" x2="95" y2="20" stroke="#4ade80" stroke-width="2"/>
+  <line x1="92" y1="32" x2="98" y2="26" stroke="#4ade80" stroke-width="1.5" opacity="0.7"/>
+  <line x1="98" y1="32" x2="92" y2="26" stroke="#4ade80" stroke-width="1.5" opacity="0.7"/>
+  
+  <!-- Signal waves -->
+  <path d="M100 25 Q105 20 110 25" stroke="#4ade80" stroke-width="1" fill="none" opacity="0.5"/>
+  <path d="M102 27 Q105 24 108 27" stroke="#4ade80" stroke-width="1" fill="none" opacity="0.3"/>
+</svg>
