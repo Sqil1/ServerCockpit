@@ -68,6 +68,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'dat_upd', type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $datUpd = null;
 
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    private int $loginAttempts = 0;
+
+    #[ORM\Column(type: Types::BOOLEAN)]
+    private bool $isLocked = false;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $lastLogin = null;
+
     public function __construct()
     {
         $this->datCre = new \DateTimeImmutable();
@@ -161,7 +170,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function isActive(): bool
     {
-        return $this->isActive;
+        return $this->isActive === true;
     }
 
     public function setIsActive(bool $isActive): static
@@ -223,6 +232,67 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setDatUpd(?\DateTimeImmutable $datUpd): static
     {
         $this->datUpd = $datUpd;
+        return $this;
+    }
+
+    public function getIsLocked(): ?bool
+    {
+        return $this->isLocked;
+    }
+
+    public function setIsLocked(?bool $isLocked): static
+    {
+        $this->isLocked = $isLocked;
+
+        return $this;
+    }
+
+    public function unlock(): void
+    {
+        $this->isLocked = false;
+        $this->resetLoginAttempts();
+    }
+
+    public function getLoginAttempts(): int
+    {
+        return $this->loginAttempts;
+    }
+
+    public function setLoginAttempts(int $loginAttempts): static
+    {
+        $this->loginAttempts = $loginAttempts;
+
+        return $this;
+    }
+
+    public function incrementLoginAttempts(): void
+    {
+        $this->loginAttempts++;
+    }
+
+    public function resetLoginAttempts(): void
+    {
+        $this->loginAttempts = 0;
+    }
+
+    public function lock(): void
+    {
+        $this->isLocked = true;
+    }
+
+    public function isLocked(): bool
+    {
+        return $this->isLocked === true;
+    }
+
+    public function getLastLogin(): ?\DateTimeInterface
+    {
+        return $this->lastLogin;
+    }
+
+    public function setLastLogin(?\DateTimeInterface $lastLogin): self
+    {
+        $this->lastLogin = $lastLogin;
         return $this;
     }
 

@@ -93,3 +93,139 @@
     }
   }
 }
+
+// Alertes d'erreur améliorées
+.alert {
+  padding: 15px 20px;
+  margin: 15px 0;
+  border-radius: $border-radius-lg;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  position: relative;
+  animation: slideIn 0.3s ease;
+
+  &.alert-danger {
+    background: rgba(231, 76, 60, 0.1);
+    color: darken($error-color, 10%);
+    border: 2px solid rgba($error-color, 0.3);
+
+    .error-content {
+      flex: 1;
+
+      strong {
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      p {
+        margin: 0;
+        font-size: 0.9rem;
+      }
+    }
+  }
+
+  .close-alert {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.1);
+    }
+  }
+}
+
+// Champs avec erreurs
+.form-control.error {
+  border-color: $error-color;
+  background: lighten($error-color, 45%);
+
+  &:focus {
+    border-color: $error-color;
+    box-shadow: 0 0 0 3px rgba($error-color, 0.2);
+  }
+}
+
+.error-message {
+  color: $error-color;
+  font-size: 0.8rem;
+  margin-top: 4px;
+  display: block;
+}
+
+// Mot de passe avec toggle
+.password-input {
+  position: relative;
+
+  .toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: $placeholder-color;
+    cursor: pointer;
+    padding: 4px;
+
+    &:hover {
+      color: $primary-color;
+    }
+  }
+
+  input {
+    padding-right: 45px;
+  }
+}
+
+// Indicateur de chargement
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 15px;
+  color: $primary-color;
+  font-weight: 500;
+}
+
+// Liens utiles
+.login-links {
+  text-align: center;
+  margin-top: 20px;
+
+  .forgot-password {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: $primary-color;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: $transition-base;
+
+    &:hover {
+      color: $secondary-color;
+      text-decoration: underline;
+    }
+  }
+}
+
+.debug-info {
+  margin-top: 10px;
+  opacity: 0.6;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
