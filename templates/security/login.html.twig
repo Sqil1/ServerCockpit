@@ -2,14 +2,9 @@
 
 {% block title %}Connexion{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-{% endblock %}
-
 {% block body %}
     <div class="login-container">
-        <!-- Logo/Icône -->
+        <!-- Logo -->
         <div class="login-logo">
             <img src="{{ asset('build/logo.svg') }}" alt="ServerCockpit" width="80">
         </div>
@@ -18,14 +13,30 @@
         <h1>Connexion</h1>
         <p class="subtitle">Accédez à votre espace personnel</p>
 
-        <form method="post">
+        <form method="post" id="login-form">
             <!-- Messages d'erreur -->
             {% if error %}
-                <div class="alert alert-danger">
+                <div class="alert alert-danger" id="error-alert">
                     <i class="fas fa-exclamation-triangle"></i>
-                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                    <div class="error-content">
+                        <strong>Erreur de connexion</strong>
+                        <p>{{ error_message ?? error.messageKey }}</p>
+                    </div>
+                    <button type="button" class="close-alert" onclick="closeAlert()">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             {% endif %}
+
+            <!-- Messages flash (succès, info) -->
+            {% for type, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ type }}">
+                        <i class="fas fa-{{ type == 'success' ? 'check-circle' : 'info-circle' }}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endfor %}
 
             <!-- Utilisateur déjà connecté -->
             {% if app.user %}
@@ -48,11 +59,12 @@
                        value="{{ last_username }}"
                        name="_username"
                        id="username"
-                       class="form-control"
+                       class="form-control {{ error ? 'error' : '' }}"
                        placeholder="votre@email.com"
                        autocomplete="email"
                        required
                        autofocus>
+                <span class="error-message" id="username-error"></span>
             </div>
 
             <!-- Champ Mot de passe -->
@@ -61,13 +73,19 @@
                     <i class="fas fa-lock"></i>
                     Mot de passe
                 </label>
-                <input type="password"
-                       name="_password"
-                       id="password"
-                       class="form-control"
-                       placeholder="••••••••"
-                       autocomplete="current-password"
-                       required>
+                <div class="password-input">
+                    <input type="password"
+                           name="_password"
+                           id="password"
+                           class="form-control {{ error ? 'error' : '' }}"
+                           placeholder="••••••••"
+                           autocomplete="current-password"
+                           required>
+                    <button type="button" class="toggle-password" onclick="togglePassword()">
+                        <i class="fas fa-eye" id="password-toggle-icon"></i>
+                    </button>
+                </div>
+                <span class="error-message" id="password-error"></span>
             </div>
 
             <!-- Token CSRF -->
@@ -80,18 +98,18 @@
             </div>
 
             <!-- Bouton de connexion -->
-            <button class="btn btn-primary" type="submit">
+            <button class="btn btn-primary" type="submit" id="login-btn">
                 <i class="fas fa-sign-in-alt"></i>
-                Se connecter
+                <span>Se connecter</span>
             </button>
+
+            <!-- Indicateur de chargement -->
+            <div class="loading-indicator" id="loading" style="display: none;">
+                <i class="fas fa-spinner fa-spin"></i>
+                Connexion en cours...
+            </div>
         </form>
 
-        <!-- Lien mot de passe oublié -->
-        <div class="forgot-password">
-            <a href="#">
-                <i class="fas fa-question-circle"></i>
-                Mot de passe oublié ?
-            </a>
-        </div>
     </div>
+
 {% endblock %}
