@@ -1,0 +1,42 @@
+<header class="dashboard-header">
+    <div class="container">
+        <div class="header-content">
+            <!-- Logo -->
+            <div class="logo">
+                <img src="{{ asset('build/logo.svg') }}" alt="ServerCockpit" width="40">
+                <span>ServerCockpit</span>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="nav-menu">
+                <a href="" class="nav-link active">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Système
+                </a>
+                <a href="" class="nav-link">
+                    <i class="fas fa-globe"></i>
+                    Sites Web
+                </a>
+                <a href="" class="nav-link">
+                    <i class="fas fa-file-alt"></i>
+                    Logs
+                </a>
+                <a href="" class="nav-link">
+                    <i class="fas fa-solid fa-gear"></i>
+                </a>
+            </nav>
+
+            <!-- User menu -->
+            <div class="user-menu">
+                <div class="user-profile">
+                    <i class="fas fa-user-circle"></i>
+                    <span>{{ app.user.userIdentifier ?? 'Utilisateur' }}</span>
+                </div>
+                <a href="{{ path('app_logout') }}" class="btn btn-logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Déconnexion
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
