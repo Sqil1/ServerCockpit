@@ -1,5 +1,6 @@
 // Import des styles
 import './styles/app.scss';
+import './scripts/dashboard-monitoring.js';
 
 // Fonctions globales pour les templates
 window.closeAlert = function(alertId = 'error-alert') {
