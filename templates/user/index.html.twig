@@ -1,0 +1,89 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}User index{% endblock %}
+
+{% block body %}
+    <div class="dashboard">
+        {% include 'header/header.html.twig' %}
+        <div class="container-user mt-4">
+            <div class="row justify-content-center">
+                <div class="col-md-12">
+                    <div class="page-title">
+                        <h1 class="text-center mb-4">Gestion des utilisateurs</h1>
+                        <div class="subtitle">Administrer les comptes et permissions</div>
+                    </div>
+                    <div class="user-table">
+                        <table class="table">
+                            <thead class="">
+                            <tr>
+                                <th>Email</th>
+                                <th>User</th>
+                                <th>Roles</th>
+                                <th>Prénom</th>
+                                <th>Nom</th>
+                                <th>Actif</th>
+                                <th>Date de création</th>
+                                <th>Date de mise à jour</th>
+                                <th>LoginAttempts</th>
+                                <th>Vérouillé</th>
+                                <th>Dernière connexion</th>
+                                <th>actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for user in users %}
+                                <tr>
+                                    <td><span class="user-value">{{ user.email }}</span></td>
+                                    <td><span class="user-value">{{ user.username }}</span></td>
+                                    <td>
+                                        {% for role in user.roles %}
+                                            <span class="role-badge">{{ role }}</span>
+                                        {% endfor %}
+                                    </td>
+                                    <td><span class="user-value">{{ user.firstName }}</span></td>
+                                    <td><span class="user-value">{{ user.lastName }}</span></td>
+                                    <td>
+                                <span class="status-badge {{ user.isActive == 'Y' ? 'active' : 'inactive' }}">
+                                    {{ user.isActive == 'Y' ? 'Actif' : 'Inactif' }}
+                                </span>
+                                    </td>
+                                    <td>
+                                        <span class="user-value">{{ user.datCre ? user.datCre|date('d/m/Y H:i:s') : '' }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="user-value">{{ user.datUpd ? user.datUpd|date('d/m/Y H:i:s') : '' }}</span>
+                                    </td>
+                                    <td><span class="user-value">{{ user.loginAttempts }}</span></td>
+                                    <td><span class="user-value">{{ user.isLocked ? 'Yes' : 'No' }}</span></td>
+                                    <td>
+                                        <span class="user-value">{{ user.lastLogin ? user.lastLogin|date('d/m/Y H:i:s') : '' }}</span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ path('app_user_show', {'id': user.id}) }}"
+                                           class="btn btn-sm btn-outline-info">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ path('app_user_edit', {'id': user.id}) }}"
+                                           class="btn btn-sm btn-outline-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="12">no records found</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mb-3">
+                <a href="{{ path('app_user_new') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus"></i> Nouvel utilisateur
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

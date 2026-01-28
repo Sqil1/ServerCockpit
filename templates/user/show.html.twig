@@ -1,0 +1,93 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détail utilisateur{% endblock %}
+
+{% block body %}
+    <div class="dashboard">
+        {% include 'header/header.html.twig' %}
+        <div class="container-user mt-4">
+            <div class="row justify-content-center">
+                <div class="col-md-12 d-flex flex-column align-items-center">
+
+                    <div class="page-title">
+                        <h1 class="text-center mb-4">Détail utilisateur</h1>
+                        <div class="subtitle">{{ user.firstName }} {{ user.lastName }}</div>
+                    </div>
+
+                    <div class="user-table user-detail">
+                        <table class="table">
+                            <tbody>
+                            <tr>
+                                <th>Email</th>
+                                <td>{{ user.email }}</td>
+                            </tr>
+                            <tr>
+                                <th>Nom d'utilisateur</th>
+                                <td>{{ user.username }}</td>
+                            </tr>
+                            <tr>
+                                <th>Rôles</th>
+                                <td>
+                                    {% for role in user.roles %}
+                                        <span class="role-badge">{{ role }}</span>
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Prénom</th>
+                                <td>{{ user.firstName }}</td>
+                            </tr>
+                            <tr>
+                                <th>Nom</th>
+                                <td>{{ user.lastName }}</td>
+                            </tr>
+                            <tr>
+                                <th>Actif</th>
+                                <td>
+                                    <span class="status-badge {{ user.isActive == 'Y' ? 'active' : 'inactive' }}">
+                                        {{ user.isActive == 'Y' ? 'Actif' : 'Inactif' }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Date de création</th>
+                                <td>{{ user.datCre ? user.datCre|date('d/m/Y H:i:s') : '-' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Date de mise à jour</th>
+                                <td>{{ user.datUpd ? user.datUpd|date('d/m/Y H:i:s') : '-' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Tentatives de connexion</th>
+                                <td>{{ user.loginAttempts }}</td>
+                            </tr>
+                            <tr>
+                                <th>Compte verrouillé</th>
+                                <td>
+                                    <span class="status-badge {{ user.isLocked ? 'inactive' : 'active' }}">
+                                        {{ user.isLocked ? 'Oui' : 'Non' }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Dernière connexion</th>
+                                <td>{{ user.lastLogin ? user.lastLogin|date('d/m/Y H:i:s') : 'Jamais' }}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="action-buttons">
+                        <a href="{{ path('app_user_index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Retour à la liste
+                        </a>
+                        <a href="{{ path('app_user_edit', {'id': user.id}) }}" class="btn btn-outline-warning">
+                            <i class="fas fa-edit"></i> Modifier
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
