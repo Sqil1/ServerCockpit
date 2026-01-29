@@ -54,7 +54,7 @@
                                         <span class="user-value">{{ user.datUpd ? user.datUpd|date('d/m/Y H:i:s') : '' }}</span>
                                     </td>
                                     <td><span class="user-value">{{ user.loginAttempts }}</span></td>
-                                    <td><span class="user-value">{{ user.isLocked ? 'Yes' : 'No' }}</span></td>
+                                    <td><span class="user-value">{{ user.isLocked ? 'Oui' : 'Non' }}</span></td>
                                     <td>
                                         <span class="user-value">{{ user.lastLogin ? user.lastLogin|date('d/m/Y H:i:s') : '' }}</span>
                                     </td>
@@ -71,7 +71,7 @@
                                 </tr>
                             {% else %}
                                 <tr>
-                                    <td colspan="12">no records found</td>
+                                    <td colspan="12">Aucun utilisateur trouvé</td>
                                 </tr>
                             {% endfor %}
                             </tbody>
