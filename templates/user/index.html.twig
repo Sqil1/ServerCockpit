@@ -12,6 +12,37 @@
                         <h1 class="text-center mb-4">Gestion des utilisateurs</h1>
                         <div class="subtitle">Administrer les comptes et permissions</div>
                     </div>
+                    <div class="search-filters">
+                        <form method="GET" action="{{ path('app_user_index') }}">
+                            <div class="filters-row">
+                                <input type="text"
+                                       class="form-control filter-search"
+                                       name="search"
+                                       value="{{ search }}"
+                                       placeholder="Rechercher...">
+
+                                <select class="form-control filter-select" name="role">
+                                    <option value="">Tous les rôles</option>
+                                    <option value="ROLE_ADMIN" {{ role == 'ROLE_ADMIN' ? 'selected' : '' }}>Admin</option>
+                                    <option value="ROLE_USER" {{ role == 'ROLE_USER' ? 'selected' : '' }}>Utilisateur</option>
+                                </select>
+
+                                <select class="form-control filter-select" name="isActive">
+                                    <option value="">Tous les statuts</option>
+                                    <option value="Y" {{ isActive == 'Y' ? 'selected' : '' }}>Actif</option>
+                                    <option value="N" {{ isActive == 'N' ? 'selected' : '' }}>Inactif</option>
+                                </select>
+
+                                <button type="submit" class="btn btn-primary filter-btn">
+                                    <i class="fas fa-search"></i>
+                                </button>
+
+                                <a href="{{ path('app_user_index') }}" class="btn btn-outline-secondary filter-btn">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                            </div>
+                        </form>
+                    </div>
                     <div class="user-table">
                         <table class="table">
                             <thead class="">
@@ -54,7 +85,9 @@
                                         <span class="user-value">{{ user.datUpd ? user.datUpd|date('d/m/Y H:i:s') : '' }}</span>
                                     </td>
                                     <td><span class="user-value">{{ user.loginAttempts }}</span></td>
-                                    <td><span class="user-value">{{ user.isLocked ? 'Oui' : 'Non' }}</span></td>
+                                    <td><span class="status-badge {{ user.isLocked == 'Y' ? 'inactive' : 'active' }}">
+                                    {{ user.isLocked == 'Y' ? 'Oui' : 'Non' }}
+                                </span></td>
                                     <td>
                                         <span class="user-value">{{ user.lastLogin ? user.lastLogin|date('d/m/Y H:i:s') : '' }}</span>
                                     </td>
@@ -76,6 +109,15 @@
                             {% endfor %}
                             </tbody>
                         </table>
+                    </div>
+                    <div class="pagination-wrapper">
+                        <div class="pagination-info">
+                            <i class="fas fa-users"></i>
+                            <span>{{ users.getTotalItemCount }} utilisateur(s) trouvé(s)</span>
+                        </div>
+                        <div class="pagination-nav">
+                            {{ knp_pagination_render(users) }}
+                        </div>
                     </div>
                 </div>
             </div>

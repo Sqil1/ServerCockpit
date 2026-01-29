@@ -484,3 +484,125 @@ body:has(.dashboard) {
     gap: 0.5rem;
   }
 }
+
+// Barre de recherche et filtres
+.search-filters {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: $border-radius-xl;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;  // Espace avec le tableau
+
+  .filters-row {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .filter-search {
+    flex: 2;
+  }
+
+  .filter-select {
+    flex: 1;
+    min-width: 180px;
+  }
+
+  .form-control {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    &:focus {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.4);
+      color: #fff;
+      box-shadow: none;
+    }
+  }
+
+  select.form-control option {
+    background: #2d2d3a;
+    color: #fff;
+  }
+
+  .filter-btn {
+    height: 51px;
+    width: 42px;
+    min-width: 42px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding: 0 0.5rem;
+}
+
+.pagination-info {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1rem;
+  color: #fff;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  i {
+    color: rgba(255, 255, 255, 0.7);
+  }
+}
+
+
+.pagination {
+  margin: 0;
+
+  .page-item {
+    .page-link {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      padding: 0.5rem 0.75rem;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: #fff;
+      }
+    }
+
+    &.active .page-link {
+      background: #6366f1;
+      border-color: #6366f1;
+      color: #fff;
+    }
+
+    &.disabled .page-link {
+      background: rgba(255, 255, 255, 0.05);
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    &:first-child .page-link {
+      border-radius: 8px 0 0 8px;
+    }
+
+    &:last-child .page-link {
+      border-radius: 0 8px 8px 0;
+    }
+  }
+}
