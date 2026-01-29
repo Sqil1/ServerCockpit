@@ -38,6 +38,7 @@ class UserType extends AbstractType
                 ],
                 'multiple' => true,
                 'expanded' => true,
+                'data' => [],  // ← Ajoute ça pour initialiser
             ])
 
             ->add('isActive', ChoiceType::class, [
