@@ -1,0 +1,20 @@
+{{ form_start(form, {'attr': {'class': 'user-form-inner', 'novalidate': 'novalidate'}}) }}
+    {% for field in form %}
+        {% if field.vars.name != '_token' %}
+            <div class="">
+                {{ form_label(field) }}
+                {{ form_widget(field, {'attr': {'class': 'form-control' ~ (field.vars.errors|length ? ' is-invalid' : '')}}) }}
+                {% if field.vars.errors|length %}
+                    <div class="invalid-feedback d-block">
+                        {{ form_errors(field) }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% endfor %}
+<div class="text-center mt-4">
+    <button class="btn btn-primary btn-lg">
+        <i class="fas fa-save"></i> {{ button_label|default('Enregistrer') }}
+    </button>
+</div>
+{{ form_end(form, {'render_rest': false}) }}
