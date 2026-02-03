@@ -1,0 +1,79 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Logs{% endblock %}
+
+{% block body %}
+    <div class="dashboard">
+        {% include 'header/header.html.twig' %}
+        <div class="container-user mt-4">
+            <div class="page-title">
+                <h1 class="text-center mb-4">Gestion des logs</h1>
+            </div>
+            {% include 'components/_form.html.twig' with {
+                form: form,
+                style: 'filters',
+                reset_path: 'app_audit_log'
+            } %}
+            <div class="user-table">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Action</th>
+                        <th>Entité</th>
+                        <th>Utilisateur</th>
+                        <th>Description</th>
+                        <th>IP</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for log in logs %}
+                        <tr>
+                            <td>
+                                <span class="user-value">{{ log.createdAt|date('d/m/Y H:i') }}</span>
+                            </td>
+                            <td>
+                                <span class="action-badge action-{{ log.action|lower }}">{{ log.action }}</span>
+                            </td>
+                            <td>
+                                <span class="user-value">{{ log.entityType }}{% if log.entityId %} #{{ log.entityId }}{% endif %}</span>
+                            </td>
+                            <td>
+                                <span class="user-value">{{ log.user ? log.user.email : '-' }}</span>
+                            </td>
+                            <td>{{ log.description|default('-')|slice(0, 50) }}{% if log.description|length > 50 %}...{% endif %}</td>
+                            <td>
+                                <span class="user-value">{{ log.ipAddress }}</span>
+                            </td>
+                            <td>
+                                {% if log.oldData or log.newData %}
+                                    <a href="{{ path('app_audit_log_show', {id: log.id}) }}" class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6">Aucun log</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination-wrapper">
+                <div class="pagination-info">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>{{ logs.getTotalItemCount }} log(s)</span>
+                </div>
+                <div class="pagination-nav">
+                    {{ knp_pagination_render(logs) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

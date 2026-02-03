@@ -37,11 +37,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     /**
      * Recherche des utilisateurs avec filtres
      */
-    public function findBySearchQuery(
-        ?string $search = null,
-        ?string $role = null,
-        ?string $isActive = null
-    ): QueryBuilder
+    public function findBySearchQuery(?string $search = null, ?string $role = null, ?string $isActive = null): QueryBuilder
     {
         $qb = $this->createQueryBuilder('u')
             ->orderBy('u.datCre', 'DESC');

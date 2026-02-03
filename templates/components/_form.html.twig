@@ -1,0 +1,49 @@
+{% if style|default('vertical') == 'filters' %}
+    {# ========== STYLE FILTRES (horizontal) ========== #}
+    <div class="search-filters">
+        {{ form_start(form, {'attr': {'class': 'filters-form'}}) }}
+        <div class="filters-row">
+            {% for field in form %}
+                {% if field.vars.name != '_token' %}
+                    <div class="filter-field">
+                        {{ form_widget(field, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+            <button type="submit" class="btn btn-primary filter-btn">
+                <i class="fas fa-search"></i>
+            </button>
+            {% if reset_path is defined %}
+                <a href="{{ path(reset_path) }}" class="btn btn-outline-secondary filter-btn">
+                    <i class="fas fa-times"></i>
+                </a>
+            {% endif %}
+        </div>
+        {{ form_end(form) }}
+    </div>
+{% else %}
+    {# ========== STYLE VERTICAL (création/édition) ========== #}
+    {{ form_start(form, {'attr': {'class': 'user-form-inner', 'novalidate': 'novalidate'}}) }}
+    {% for field in form %}
+        {% if field.vars.name != '_token' %}
+            <div class="mb-3">
+                {{ form_label(field) }}
+                {{ form_widget(field, {'attr': {'class': 'form-control' ~ (field.vars.errors|length ? ' is-invalid' : '')}}) }}
+                {% if field.vars.errors|length %}
+                    <div class="invalid-feedback d-block">
+                        {{ form_errors(field) }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% endfor %}
+
+    {{ form_widget(form._token) }}
+
+    <div class="text-center mt-4">
+        <button class="btn btn-primary btn-lg">
+            <i class="fas fa-save"></i> {{ button_label|default('Enregistrer') }}
+        </button>
+    </div>
+    {{ form_end(form, {'render_rest': false}) }}
+{% endif %}
