@@ -1,0 +1,100 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détail du log{% endblock %}
+
+{% block body %}
+    <div class="dashboard">
+        {% include 'header/header.html.twig' %}
+        <div class="container-user mt-4">
+            <div class="page-title">
+                <h1 class="text-center mb-4">Détail du log</h1>
+                <div class="subtitle">{{ log.action }} - {{ log.createdAt|date('d/m/Y H:i:s') }}</div>
+            </div>
+
+            <div class="user-table user-detail">
+                <table class="table">
+                    <tbody>
+                    <tr>
+                        <th>Date</th>
+                        <td><span class="user-value">{{ log.createdAt|date('d/m/Y H:i:s') }}</span></td>
+                    </tr>
+                    <tr>
+                        <th>Action</th>
+                        <td><span class="action-badge action-{{ log.action|lower }}">{{ log.action }}</span></td>
+                    </tr>
+                    <tr>
+                        <th>Entité</th>
+                        <td><span class="user-value">{{ log.entityType }}{% if log.entityId %} #{{ log.entityId }}{% endif %}</span></td>
+                    </tr>
+                    <tr>
+                        <th>Utilisateur</th>
+                        <td><span class="user-value">{{ log.user ? log.user.email : '-' }}</span></td>
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        <td>{{ log.description|default('-') }}</td>
+                    </tr>
+                    <tr>
+                        <th>IP</th>
+                        <td><span class="user-value">{{ log.ipAddress }}</span></td>
+                    </tr>
+                    <tr>
+                        <th>User Agent</th>
+                        <td>{{ log.userAgent|default('-') }}</td>
+                    </tr>
+                    {% if log.oldData or log.newData %}
+                        <tr>
+                            <th>Modifications</th>
+                            <td>
+                                <div class="log-changes">
+                                    <table class="changes-table">
+                                        <thead>
+                                        <tr>
+                                            <th>Champ</th>
+                                            <th>Avant</th>
+                                            <th>Après</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% if log.newData %}
+                                            {% for key, value in log.newData %}
+                                                <tr>
+                                                    <td class="change-field">{{ key }}</td>
+                                                    <td class="change-old">
+                                                        {% set oldVal = log.oldData[key]|default('-') %}
+                                                        {{ oldVal is iterable ? oldVal|json_encode : oldVal }}
+                                                    </td>
+                                                    <td class="change-new">
+                                                        {{ value is iterable ? value|json_encode : value }}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        {% elseif log.oldData %}
+                                            {% for key, value in log.oldData %}
+                                                <tr>
+                                                    <td class="change-field">{{ key }}</td>
+                                                    <td class="change-old">
+                                                        {{ value is iterable ? value|json_encode : value }}
+                                                    </td>
+                                                    <td class="change-new">-</td>
+                                                </tr>
+                                            {% endfor %}
+                                        {% endif %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="action-buttons">
+                <a href="{{ path('app_audit_log') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour à la liste
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
