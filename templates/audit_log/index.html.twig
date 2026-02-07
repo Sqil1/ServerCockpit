@@ -12,7 +12,7 @@
             {% include 'components/_form.html.twig' with {
                 form: form,
                 style: 'filters',
-                reset_path: 'app_audit_log'
+                reset_path: 'app_audit_log_index'
             } %}
             <div class="user-table">
                 <table class="table">
@@ -48,7 +48,7 @@
                             </td>
                             <td>
                                 {% if log.oldData or log.newData %}
-                                    <a href="{{ path('app_audit_log_show', {id: log.id}) }}" class="btn btn-sm btn-outline-info">
+                                    <a href="{{ path('app_audit_log_index_show', {id: log.id}) }}" class="btn btn-sm btn-outline-info">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                 {% else %}

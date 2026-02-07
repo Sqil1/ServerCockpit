@@ -1,6 +1,5 @@
-// === STYLES POUR LE DASHBOARD ===
+// === DASHBOARD ===
 
-// Override du body pour le dashboard
 body:has(.dashboard) {
   background: linear-gradient(135deg, $primary-color 0%, $secondary-color 100%);
   padding: 0;
@@ -14,7 +13,7 @@ body:has(.dashboard) {
   flex-direction: column;
 }
 
-// === HEADER ===
+// Header
 .dashboard-header {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
@@ -33,7 +32,6 @@ body:has(.dashboard) {
   }
 }
 
-// Logo
 .logo {
   display: flex;
   align-items: center;
@@ -56,7 +54,6 @@ body:has(.dashboard) {
   }
 }
 
-// Navigation
 .nav-menu {
   display: flex;
   gap: 0.5rem;
@@ -89,7 +86,6 @@ body:has(.dashboard) {
   }
 }
 
-// Menu utilisateur
 .user-menu {
   display: flex;
   align-items: center;
@@ -141,7 +137,7 @@ body:has(.dashboard) {
   }
 }
 
-// === CONTENU PRINCIPAL ===
+// Contenu
 .dashboard-main {
   flex: 1;
   padding: 2rem 0;
@@ -172,7 +168,7 @@ body:has(.dashboard) {
   }
 }
 
-// === CONTRÔLES DE MONITORING ===
+// Contrôles
 .monitoring-controls {
   display: flex;
   align-items: center;
@@ -191,7 +187,7 @@ body:has(.dashboard) {
   }
 }
 
-// === BOUTONS ===
+// Boutons
 .btn {
   padding: 0.5rem 1rem;
   border: none;
@@ -244,10 +240,10 @@ body:has(.dashboard) {
   font-size: 0.9rem;
 }
 
-// === WIDGETS DE MONITORING ===
+// Widgets - 3 colonnes fixes
 .monitoring-widgets {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
   margin-top: 20px;
 }
@@ -275,10 +271,6 @@ body:has(.dashboard) {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-
-      i {
-        color: inherit;
-      }
     }
   }
 
@@ -287,11 +279,7 @@ body:has(.dashboard) {
   }
 }
 
-// === BARRES DE PROGRESSION ===
-.progress-container {
-  margin-bottom: 15px;
-}
-
+// Barres de progression
 .progress {
   background-color: rgba(255, 255, 255, 0.2);
   border-radius: 10px;
@@ -301,69 +289,107 @@ body:has(.dashboard) {
 }
 
 .progress-bar {
-  height: 100%;
-  transition: width 0.5s ease;
-  border-radius: 10px;
-
-  &.bg-success { background-color: #28a745; }
-  &.bg-info { background-color: #17a2b8; }
-  &.bg-warning { background-color: #ffc107; }
-  &.bg-danger { background-color: #dc3545; }
-  &.bg-primary { background-color: #007bff; }
-}
-
-.progress-label {
-  text-align: center;
+  transition: width 0.8s ease-out, background 0.3s ease;
   font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+
+  &.bg-success {
+    background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+  }
+
+  &.bg-warning {
+    background: linear-gradient(90deg, #ffc107 0%, #fd7e14 100%);
+  }
+
+  &.bg-danger {
+    background: linear-gradient(90deg, #dc3545 0%, #e83e8c 100%);
+  }
+
+  &.bg-primary {
+    background: linear-gradient(90deg, #007bff 0%, #6610f2 100%);
+  }
+
+  &.bg-info {
+    background: linear-gradient(90deg, #17a2b8 0%, #20c997 100%);
+  }
 }
 
-// === CPU CORES ===
-.cpu-core {
-  margin: 5px 0;
-  font-size: 0.9rem;
+// === BARRES DE PROGRESSION AMÉLIORÉES ===
+
+// Barre grande (CPU global, RAM, Disque)
+.progress-lg {
+  height: 30px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+
+  .progress-bar {
+    height: 100%;
+    transition: width 0.6s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    font-size: 0.95rem;
+  }
 }
 
+// Barre petite (cœurs CPU)
+.progress-sm {
+  height: 15px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+
+  .progress-bar {
+    height: 100%;
+    transition: width 0.6s ease;
+    font-size: 0;  // Cache le texte
+  }
+}
+
+
+// CPU
 .cpu-global {
-  margin: 1rem 0;
-  padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: $border-radius;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: $border-radius-lg;
+  border-left: 4px solid rgba(255, 255, 255, 0.5);
 
   strong {
     color: #fff;
-  }
-
-  small {
-    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.1rem;
   }
 }
 
-// === INTERFACES RÉSEAU ===
-.network-interface {
-  margin: 10px 0;
-  padding: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 5px;
-
-  strong {
-    color: #fff;
-    font-weight: 600;
-  }
-
-  div {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 0.9rem;
-  }
-}
-
-// === LOAD AVERAGES ===
-.load-averages {
+.cpu-cores-detail {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-top: 1rem;
+
+  .cpu-core {
+    margin-bottom: 0;
+
+    .d-flex {
+      margin-bottom: 0.25rem;
+    }
+
+    small {
+      font-weight: 500;
+      font-size: 0.85rem;
+    }
+  }
 }
 
+// Load Average - IMPORTANT !
 .load-item {
   text-align: center;
   padding: 0.75rem;
@@ -384,7 +410,25 @@ body:has(.dashboard) {
   }
 }
 
-// === MESSAGES D'ALERTE ===
+// Réseau
+.network-interface {
+  margin: 10px 0;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+
+  strong {
+    color: #fff;
+    font-weight: 600;
+  }
+
+  div {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+  }
+}
+
+// Alertes
 .alert {
   padding: 1rem 1.25rem;
   border-radius: $border-radius;
@@ -404,7 +448,26 @@ body:has(.dashboard) {
   }
 }
 
-// === RESPONSIVE ===
+// Utilitaires
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 1rem; }
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 1rem; }
+.pt-3 { padding-top: 1rem; }
+.border-top { border-top: 1px solid rgba(255, 255, 255, 0.2); }
+.d-flex { display: flex; }
+.justify-content-between { justify-content: space-between; }
+.text-muted { color: rgba(255, 255, 255, 0.6); }
+
+// Responsive
+@media (max-width: 1400px) {
+  .monitoring-widgets {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: $tablet) {
   .dashboard-header {
     .header-content {
@@ -441,9 +504,8 @@ body:has(.dashboard) {
     }
   }
 
-  .load-averages {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
+  .cpu-cores-detail {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -464,145 +526,35 @@ body:has(.dashboard) {
     gap: 1rem;
   }
 
-  .widget {
-    .widget-header {
-      padding: 1rem;
-    }
-
-    .widget-content {
-      padding: 1rem;
-    }
-  }
-
   .nav-menu .nav-link {
     padding: 0.5rem 0.75rem;
     font-size: 0.9rem;
   }
-
-  .load-averages {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-  }
 }
 
-// Barre de recherche et filtres
-.search-filters {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: $border-radius-xl;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 1rem 1.5rem;
-  margin-bottom: 2rem;  // Espace avec le tableau
+// Bouton accordéon
+.btn-accordion {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.8);
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
 
-  .filters-row {
-    display: flex;
-    flex-direction: row;
-    gap: 1rem;
-    align-items: center;
-  }
-
-  .filter-search {
-    flex: 2;
-  }
-
-  .filter-select {
-    flex: 1;
-    min-width: 180px;
-  }
-
-  .form-control {
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #fff;
-
-    &::placeholder {
-      color: rgba(255, 255, 255, 0.5);
-    }
-
-    &:focus {
-      background: rgba(255, 255, 255, 0.2);
-      border-color: rgba(255, 255, 255, 0.4);
-      color: #fff;
-      box-shadow: none;
-    }
-  }
-
-  select.form-control option {
-    background: #2d2d3a;
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
     color: #fff;
   }
-
-  .filter-btn {
-    height: 51px;
-    width: 42px;
-    min-width: 42px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-}
-
-.pagination-wrapper {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
-  padding: 0 0.5rem;
-}
-
-.pagination-info {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 0.5rem 1rem;
-  color: #fff;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 
   i {
-    color: rgba(255, 255, 255, 0.7);
+    transition: transform 0.3s ease;
   }
-}
 
-
-.pagination {
-  margin: 0;
-
-  .page-item {
-    .page-link {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #fff;
-      padding: 0.5rem 0.75rem;
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.2);
-        color: #fff;
-      }
-    }
-
-    &.active .page-link {
-      background: #6366f1;
-      border-color: #6366f1;
-      color: #fff;
-    }
-
-    &.disabled .page-link {
-      background: rgba(255, 255, 255, 0.05);
-      color: rgba(255, 255, 255, 0.3);
-    }
-
-    &:first-child .page-link {
-      border-radius: 8px 0 0 8px;
-    }
-
-    &:last-child .page-link {
-      border-radius: 0 8px 8px 0;
-    }
+  &.active i {
+    transform: rotate(180deg);
   }
 }

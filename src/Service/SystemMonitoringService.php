@@ -2,252 +2,373 @@
 
 namespace App\Service;
 
+use Psr\Cache\CacheItemPoolInterface;
+
 class SystemMonitoringService
 {
     private string $procPath;
+    private string $osReleasePath;
+    private int $cacheLifetime = 2;
 
-    public function __construct(string $procPath = '/proc')
-    {
-        // Validation pour la production seulement
-        if ($_ENV['APP_ENV'] === 'prod') {
-            if ($procPath !== '/proc') {
-                throw new \InvalidArgumentException('Seul /proc est autorisé en production');
-            }
-        }
-
+    public function __construct(
+        string $procPath,
+        string $osReleasePath
+    ) {
         $this->procPath = $procPath;
+        $this->osReleasePath = $osReleasePath;
     }
 
-    /**
-     * Lit les informations CPU depuis /proc/stat
-     * Récupère TOUS les CPU individuels + global
-     */
+    // CPU - Avec cache et delta
     public function getCpuUsage(): array
     {
-        $content = file_get_contents($this->procPath . '/stat');
-        $lines = explode("\n", $content);
+        $cacheFile = __DIR__ . '/../../var/cache/cpu_cache.json';
+        $currentStats = $this->readCpuStats();
 
-        $cpus = [];
-        $globalStats = null;
+        if (file_exists($cacheFile)) {
+            $cachedData = json_decode(file_get_contents($cacheFile), true);
+            $age = time() - $cachedData['timestamp'];
+
+            if ($age >= $this->cacheLifetime) {
+                $oldStats = $cachedData['stats'];
+                $result = $this->calculateDelta($oldStats, $currentStats);
+
+                file_put_contents($cacheFile, json_encode([
+                    'stats' => $currentStats,
+                    'timestamp' => time(),
+                    'lastResult' => $result,
+                ]));
+
+                return $result;
+            }
+
+            return $cachedData['lastResult'] ?? [];
+        }
+
+        file_put_contents($cacheFile, json_encode([
+            'stats' => $currentStats,
+            'timestamp' => time(),
+            'lastResult' => [],
+        ]));
+
+        return [];
+    }
+
+    // Mémoire - Lecture directe
+    public function getMemoryUsage(): array
+    {
+        $meminfoPath = rtrim($this->procPath, '/') . '/meminfo';
+        $content = file_get_contents($meminfoPath);
+
+        if ($content === false) {
+            throw new \RuntimeException("Impossible de lire {$meminfoPath}");
+        }
+
+        $lines = explode("\n", $content);
+        $memTotal = 0;
+        $memAvailable = 0;
 
         foreach ($lines as $line) {
-            if (empty($line)) continue;
+            if ($line === '') continue;
 
-            // Ligne CPU globale ou individuelle
-            if (preg_match('/^cpu(\d*)\s+(.+)/', $line, $matches)) {
-                $cpuId = $matches[1] === '' ? 'global' : (int)$matches[1];
-                $statsStr = $matches[2];
+            if (str_starts_with($line, 'MemTotal:')) {
+                $parts = preg_split('/\s+/', trim($line));
+                if (isset($parts[1]) && is_numeric($parts[1])) {
+                    $memTotal = (int)$parts[1];
+                }
+            }
 
-                // Parser les valeurs
-                $values = array_map('intval', preg_split('/\s+/', trim($statsStr)));
-
-                $cpuData = [
-                    'user' => $values[0] ?? 0,
-                    'nice' => $values[1] ?? 0,
-                    'system' => $values[2] ?? 0,
-                    'idle' => $values[3] ?? 0,
-                    'iowait' => $values[4] ?? 0,
-                    'irq' => $values[5] ?? 0,
-                    'softirq' => $values[6] ?? 0,
-                    'steal' => $values[7] ?? 0
-                ];
-
-                $cpuData['total'] = array_sum($cpuData);
-                $cpuData['active'] = $cpuData['total'] - $cpuData['idle'];
-
-                if ($cpuId === 'global') {
-                    $globalStats = $cpuData;
-                } else {
-                    $cpus[$cpuId] = $cpuData;
+            if (str_starts_with($line, 'MemAvailable:')) {
+                $parts = preg_split('/\s+/', trim($line));
+                if (isset($parts[1]) && is_numeric($parts[1])) {
+                    $memAvailable = (int)$parts[1];
                 }
             }
         }
 
-        return [
-            'global' => $globalStats,
-            'individual_cpus' => $cpus,
-            'cores_count' => count($cpus),
-            'total_cores' => $this->getCpuCores()
-        ];
-    }
-
-    /**
-     * Lit les informations mémoire depuis /proc/meminfo
-     */
-    public function getMemoryUsage(): array
-    {
-        $content = file_get_contents($this->procPath . '/meminfo');
-
-        // Normaliser les fins de ligne
-        $content = str_replace("\r\n", "\n", $content);
-        $lines = explode("\n", $content);
-
-        $memory = [];
-        foreach ($lines as $line) {
-            $line = trim($line);
-            if (empty($line)) continue;
-
-            // Parser chaque ligne individuellement
-            if (preg_match('/^(\w+):\s+(\d+)\s*kB?$/i', $line, $matches)) {
-                $memory[$matches[1]] = (int)$matches[2];
-            }
-        }
-
-        // Vérifier que les clés essentielles existent
-        if (!isset($memory['MemTotal'])) {
-            throw new \Exception("MemTotal non trouvé dans meminfo. Clés disponibles: " . implode(', ', array_keys($memory)));
-        }
-
-        // Conversion kB → bytes
-        $total = $memory['MemTotal'] * 1024;
-        $available = ($memory['MemAvailable'] ?? $memory['MemFree']) * 1024;
-        $free = $memory['MemFree'] * 1024;
-        $buffers = ($memory['Buffers'] ?? 0) * 1024;
-        $cached = ($memory['Cached'] ?? 0) * 1024;
-
-        // Calcul de la mémoire réellement utilisée
-        $used = $total - $available;
-        $percentage = round(($used / $total) * 100, 2);
+        $memUsed = max(0, $memTotal - $memAvailable);
+        $percentageUsed = ($memTotal > 0) ? ($memUsed / $memTotal) * 100 : 0;
 
         return [
-            'total' => $total,
-            'used' => $used,
-            'free' => $free,
-            'available' => $available,
-            'buffers' => $buffers,
-            'cached' => $cached,
-            'percentage' => $percentage,
+            'total' => $memTotal,
+            'available' => $memAvailable,
+            'used' => $memUsed,
+            'percentage' => round($percentageUsed, 1),
             'formatted' => [
-                'total' => $this->formatBytes($total),
-                'used' => $this->formatBytes($used),
-                'available' => $this->formatBytes($available)
-            ]
+                'total' => $this->formatBytes($memTotal * 1024),
+                'available' => $this->formatBytes($memAvailable * 1024),
+                'used' => $this->formatBytes($memUsed * 1024),
+            ],
         ];
     }
 
-    /**
-     * Lit les informations disque pour un chemin donné
-     */
+    // Disque - Lecture directe
     public function getDiskUsage(string $path = '/'): array
     {
-        // Fonctions PHP natives qui lisent les infos du système de fichiers
+        if (!is_dir($path)) {
+            throw new \RuntimeException("Le chemin {$path} n'est pas un répertoire valide");
+        }
+
         $total = disk_total_space($path);
         $free = disk_free_space($path);
+
+        if ($total === false || $free === false) {
+            throw new \RuntimeException("Impossible de lire les informations du disque pour {$path}");
+        }
+
         $used = $total - $free;
-        $percentage = round(($used / $total) * 100, 2);
+        $percentage = ($total > 0) ? ($used / $total) * 100 : 0;
 
         return [
-            'path' => $path,
             'total' => $total,
-            'used' => $used,
             'free' => $free,
-            'percentage' => $percentage,
+            'used' => $used,
+            'percentage' => round($percentage, 1),
             'formatted' => [
                 'total' => $this->formatBytes($total),
+                'free' => $this->formatBytes($free),
                 'used' => $this->formatBytes($used),
-                'free' => $this->formatBytes($free)
-            ]
+            ],
         ];
     }
 
-    /**
-     * Lit les statistiques réseau depuis /proc/net/dev
-     */
+    // Réseau - Avec cache et delta (comme le CPU)
     public function getNetworkStats(): array
     {
-        $content = file_get_contents($this->procPath . '/net/dev');
-        $lines = explode("\n", $content);
+        $cacheFile = __DIR__ . '/../../var/cache/network_cache.json';
+        $currentStats = $this->readNetworkStats();
 
-        $interfaces = [];
+        if (file_exists($cacheFile)) {
+            $cachedData = json_decode(file_get_contents($cacheFile), true);
+            $age = time() - $cachedData['timestamp'];
+
+            if ($age >= $this->cacheLifetime) {
+                $oldStats = $cachedData['stats'];
+                $result = $this->calculateNetworkDelta($oldStats, $currentStats, $age);
+
+                file_put_contents($cacheFile, json_encode([
+                    'stats' => $currentStats,
+                    'timestamp' => time(),
+                    'lastResult' => $result,
+                ]));
+
+                return $result;
+            }
+
+            return $cachedData['lastResult'] ?? [];
+        }
+
+        file_put_contents($cacheFile, json_encode([
+            'stats' => $currentStats,
+            'timestamp' => time(),
+            'lastResult' => [],
+        ]));
+
+        return [];
+    }
+
+    // Load Average - Lecture directe
+    public function getLoadAverage(): array
+    {
+        $loadavgPath = rtrim($this->procPath, '/') . '/loadavg';
+        $content = file_get_contents($loadavgPath);
+
+        if ($content === false) {
+            throw new \RuntimeException("Impossible de lire {$loadavgPath}");
+        }
+
+        $parts = preg_split('/\s+/', trim($content));
+        $load1 = (float)$parts[0];
+        $load5 = (float)$parts[1];
+        $load15 = (float)$parts[2];
+
+        $processesParts = explode("/", $parts[3]);
+        $runningProcesses = (int)$processesParts[0];
+        $totalProcesses = (int)$processesParts[1];
+
+        $cpuCores = $this->getCpuCores();
+
+        return [
+            'load1' => $load1,
+            'load5' => $load5,
+            'load15' => $load15,
+            'load1_percent' => round(($load1 / $cpuCores) * 100, 1),
+            'load5_percent' => round(($load5 / $cpuCores) * 100, 1),
+            'load15_percent' => round(($load15 / $cpuCores) * 100, 1),
+            'cpu_cores' => $cpuCores,
+            'running_processes' => $runningProcesses,
+            'total_processes' => $totalProcesses,
+        ];
+    }
+
+    // Infos système
+    public function getSystemInfo(): array
+    {
+        $os = 'Unknown';
+        if (file_exists($this->osReleasePath)) {
+            $osData = parse_ini_file($this->osReleasePath);
+            $os = $osData['PRETTY_NAME'] ?? $osData['NAME'] ?? 'Linux';
+        }
+
+        return [
+            'hostname' => gethostname(),
+            'os' => $os,
+            'architecture' => php_uname('m'),
+            'kernel' => php_uname('r'),
+            'uptime' => $this->getUptime(),
+            'cpu_cores' => $this->getCpuCores(),
+            'php_version' => PHP_VERSION,
+        ];
+    }
+
+    // Lecture brute des stats CPU depuis /proc/stat
+    private function readCpuStats(): array
+    {
+        $procInfoPath = rtrim($this->procPath, '/') . '/stat';
+        $content = file_get_contents($procInfoPath);
+
+        if ($content === false) {
+            throw new \RuntimeException("Impossible de lire {$procInfoPath}");
+        }
+
+        $lines = explode("\n", $content);
+        $cpus = [];
 
         foreach ($lines as $line) {
-            // Ignorer les lignes d'en-tête et les interfaces virtuelles
-            if (strpos($line, ':') === false) continue;
-            if (preg_match('/\b(lo|docker|veth|br-)\b/', $line)) continue;
-
-            // Parse la ligne: "interface: rx_bytes rx_packets ... tx_bytes tx_packets ..."
-            $parts = preg_split('/\s+/', trim($line));
-            $interfaceName = str_replace(':', '', $parts[0]);
-
-            if (count($parts) >= 10) {
-                $interfaces[$interfaceName] = [
-                    'rx_bytes' => (int)$parts[1],      // Bytes reçus
-                    'rx_packets' => (int)$parts[2],    // Paquets reçus
-                    'rx_errors' => (int)$parts[3],     // Erreurs réception
-                    'tx_bytes' => (int)$parts[9],      // Bytes envoyés
-                    'tx_packets' => (int)$parts[10],   // Paquets envoyés
-                    'tx_errors' => (int)$parts[11],    // Erreurs envoi
-                    'formatted' => [
-                        'rx' => $this->formatBytes((int)$parts[1]),
-                        'tx' => $this->formatBytes((int)$parts[9])
-                    ]
-                ];
+            if (empty(trim($line)) || !str_starts_with($line, 'cpu')) {
+                continue;
             }
+
+            $parts = preg_split('/\s+/', trim($line));
+
+            if (count($parts) < 5) continue;
+
+            $name = $parts[0];
+            $values = array_slice($parts, 1);
+            $values = array_map('intval', $values);
+            $total = array_sum($values);
+
+            $idle = isset($parts[4]) ? (int)$parts[4] : 0;
+            $iowait = isset($parts[5]) ? (int)$parts[5] : 0;
+            $idleAll = $idle + $iowait;
+
+            $cpus[$name] = [
+                'total' => $total,
+                'idleAll' => $idleAll,
+            ];
+        }
+
+        return $cpus;
+    }
+
+    // Calcul du delta CPU (différence entre 2 mesures)
+    private function calculateDelta(array $oldStats, array $newStats): array
+    {
+        $result = [];
+
+        foreach ($newStats as $cpuName => $newData) {
+            if (!isset($oldStats[$cpuName])) continue;
+
+            $oldData = $oldStats[$cpuName];
+            $deltaTotal = $newData['total'] - $oldData['total'];
+            $deltaIdle = $newData['idleAll'] - $oldData['idleAll'];
+
+            if ($deltaTotal <= 0) {
+                $percentage = 0;
+            } else {
+                $percentage = (($deltaTotal - $deltaIdle) / $deltaTotal) * 100;
+            }
+
+            $result[$cpuName] = [
+                'percentage' => round($percentage, 2),
+            ];
+        }
+
+        return $result;
+    }
+
+    // Lecture brute des stats réseau depuis /proc/net/dev
+    private function readNetworkStats(): array
+    {
+        $netDevPath = rtrim($this->procPath, '/') . '/net/dev';
+        $content = file_get_contents($netDevPath);
+
+        if ($content === false) {
+            throw new \RuntimeException("Impossible de lire {$netDevPath}");
+        }
+
+        $lines = explode("\n", $content);
+        $interfaces = [];
+
+        foreach ($lines as $index => $line) {
+            // Skip headers (2 premières lignes)
+            if ($index < 2 || trim($line) === '') continue;
+
+            $parts = explode(':', $line);
+            if (count($parts) < 2) continue;
+
+            $interfaceName = trim($parts[0]);
+            $stats = preg_split('/\s+/', trim($parts[1]));
+
+            if (count($stats) < 9) continue;
+
+            $interfaces[$interfaceName] = [
+                'rx_bytes' => (int)$stats[0],
+                'tx_bytes' => (int)$stats[8],
+            ];
         }
 
         return $interfaces;
     }
 
-    /**
-     * Lit la charge système depuis /proc/loadavg
-     */
-    public function getLoadAverage(): array
+    // Calcul du débit réseau (bytes/sec)
+    private function calculateNetworkDelta(array $oldStats, array $newStats, int $timeElapsed): array
     {
-        $content = trim(file_get_contents($this->procPath . '/loadavg'));
-        $parts = explode(' ', $content);
+        $result = [];
 
-        // Format: "1min 5min 15min running/total last_pid"
-        return [
-            '1min' => (float)$parts[0],   // Charge sur 1 minute
-            '5min' => (float)$parts[1],   // Charge sur 5 minutes
-            '15min' => (float)$parts[2],  // Charge sur 15 minutes
-            'running_processes' => explode('/', $parts[3])[0], // Processus actifs
-            'total_processes' => explode('/', $parts[3])[1]    // Total processus
-        ];
+        foreach ($newStats as $interface => $newData) {
+            if (!isset($oldStats[$interface])) continue;
+
+            $oldData = $oldStats[$interface];
+
+            $deltaRx = $newData['rx_bytes'] - $oldData['rx_bytes'];
+            $deltaTx = $newData['tx_bytes'] - $oldData['tx_bytes'];
+
+            $rxBytesPerSec = ($timeElapsed > 0) ? $deltaRx / $timeElapsed : 0;
+            $txBytesPerSec = ($timeElapsed > 0) ? $deltaTx / $timeElapsed : 0;
+
+            $result[$interface] = [
+                'rx_bytes_per_sec' => (int)$rxBytesPerSec,
+                'tx_bytes_per_sec' => (int)$txBytesPerSec,
+                'formatted' => [
+                    'rx' => $this->formatBytes((int)$rxBytesPerSec) . '/s',
+                    'tx' => $this->formatBytes((int)$txBytesPerSec) . '/s',
+                ],
+            ];
+        }
+
+        return $result;
     }
 
-    /**
-     * Informations générales du système
-     */
-    public function getSystemInfo(): array
-    {
-        return [
-            'hostname' => gethostname(),
-            'os' => PHP_OS_FAMILY,
-            'kernel' => php_uname('r'),        // Version du noyau
-            'architecture' => php_uname('m'),   // Architecture (x86_64)
-            'php_version' => PHP_VERSION,
-            'uptime' => $this->getUptime(),
-            'server_time' => date('Y-m-d H:i:s'),
-            'timezone' => date_default_timezone_get()
-        ];
-    }
-
-    /**
-     * Compte le nombre de cœurs CPU
-     */
+    // Compte les threads logiques (processeurs)
     private function getCpuCores(): int
     {
         static $cores = null;
 
         if ($cores === null) {
             $content = file_get_contents($this->procPath . '/cpuinfo');
-            // Compte le nombre d'occurrences de "processor"
-            $cores = substr_count($content, 'processor');
+            preg_match_all('/^processor\s*:/m', $content, $matches);
+            $cores = count($matches[0]);
         }
 
         return $cores ?: 1;
     }
 
-    /**
-     * Lit l'uptime depuis /proc/uptime
-     */
+    // Formatage de l'uptime
     private function getUptime(): string
     {
         $content = trim(file_get_contents($this->procPath . '/uptime'));
         $uptimeSeconds = (float)explode(' ', $content)[0];
 
-        // Conversion en format lisible
         $days = floor($uptimeSeconds / 86400);
         $hours = floor(($uptimeSeconds % 86400) / 3600);
         $minutes = floor(($uptimeSeconds % 3600) / 60);
@@ -255,9 +376,7 @@ class SystemMonitoringService
         return sprintf('%dd %dh %dm', $days, $hours, $minutes);
     }
 
-    /**
-     * Formate les bytes en unités lisiblesfet
-     */
+    // Formatage bytes → KB/MB/GB
     private function formatBytes(int $bytes): string
     {
         if ($bytes === 0) return '0 B';
@@ -267,4 +386,5 @@ class SystemMonitoringService
 
         return sprintf('%.2f %s', $bytes / pow(1024, $factor), $units[$factor]);
     }
+
 }

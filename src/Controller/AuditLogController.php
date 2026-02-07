@@ -14,7 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class AuditLogController extends AbstractController
 {
-    #[Route('/admin/audit', name: 'app_audit_log')]
+    #[Route('/admin/audit', name: 'app_audit_log_index')]
     public function index(Request $request, AuditLogRepository $auditLogRepository, PaginatorInterface $paginator): Response
     {
         $search = new AuditLogSearchData();
@@ -35,7 +35,7 @@ final class AuditLogController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/audit/{id}', name: 'app_audit_log_show', methods: ['GET'])]
+    #[Route('/admin/audit/{id}', name: 'app_audit_log_index_show', methods: ['GET'])]
     public function show(AuditLog $auditLog): Response
     {
         return $this->render('audit_log/show.html.twig', [
