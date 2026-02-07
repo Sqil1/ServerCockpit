@@ -32,50 +32,6 @@ class SecurityController extends AbstractController
         ]);
     }
 
-    private function getUserStatus($user): ?array
-    {
-        if (!$user) {
-            return null;
-        }
-
-        return [
-            'isActive' => $user->isActive(),
-            'isLocked' => $user->isLocked(),
-            'loginAttempts' => $user->getLoginAttempts(),
-            'maxAttempts' => 5
-        ];
-    }
-
-    private function getCustomErrorMessage(string $messageKey, ?array $userStatus): string
-    {
-        // Messages basés sur le statut de l'utilisateur
-        if ($userStatus) {
-            if (!$userStatus['isActive']) {
-                return 'Votre compte est désactivé. Contactez l\'administrateur.';
-            }
-
-            if ($userStatus['isLocked']) {
-                return 'Compte verrouillé après ' . $userStatus['loginAttempts'] . ' tentatives. Contactez l\'administrateur.';
-            }
-
-            // Avertir si proche du verrouillage
-            if ($userStatus['loginAttempts'] >= 3) {
-                $remaining = $userStatus['maxAttempts'] - $userStatus['loginAttempts'];
-                return "Identifiants incorrects. Attention : plus que {$remaining} tentative(s) avant verrouillage.";
-            }
-        }
-
-        // Messages standards selon le type d'erreur
-        return match($messageKey) {
-            'Invalid credentials.' => 'Email ou mot de passe incorrect',
-            'Username could not be found.' => 'Aucun compte trouvé avec cet email',
-            'Bad credentials.' => 'Identifiants invalides',
-            'Account is disabled.' => 'Votre compte a été désactivé',
-            'Account is locked.' => 'Votre compte est temporairement verrouillé',
-            default => 'Erreur de connexion. Veuillez réessayer.'
-        };
-    }
-
     #[Route(path: '/logout', name: 'app_logout')]
     public function logout(): void
     {

@@ -4,9 +4,8 @@
 
 {% block body %}
     <div class="dashboard">
-        <!-- Header avec navigation -->
         {% include 'header/header.html.twig' %}
-        <!-- Contenu principal -->
+
         <main class="dashboard-main">
             <div class="container">
                 <!-- Titre de la page -->
@@ -18,7 +17,15 @@
                     <p>Vue d'ensemble du système {{ system_info.hostname ?? 'serveur' }}</p>
                 </div>
 
-                <!-- Messages d'erreur -->
+                <!-- Messages flash (erreurs) -->
+                {% for message in app.flashes('error') %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-triangle"></i> {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+
+                <!-- Messages d'erreur dynamiques (AJAX) -->
                 <div id="error-messages"></div>
 
                 <!-- Contrôles du monitoring -->
@@ -30,13 +37,13 @@
                         <i class="fas fa-sync-alt"></i> Actualiser
                     </button>
                     <select id="refresh-interval" class="form-select">
-                        <option value="3">3 secondes</option>
+                        <option value="1" selected>1 secondes</option>
                         <option value="5">5 secondes</option>
                         <option value="10">10 secondes</option>
                         <option value="30">30 secondes</option>
                     </select>
                     <span class="last-update">
-                        Dernière mise à jour: <span id="last-refresh">--:--:--</span>
+                        Dernière mise à jour: <span id="last-refresh">{{ "now"|date("H:i:s") }}</span>
                     </span>
                 </div>
 
@@ -49,10 +56,77 @@
                             <h3><i class="fas fa-microchip"></i> Processeur</h3>
                         </div>
                         <div class="widget-content">
-                            <div class="cpu-cores">Chargement...</div>
-                            <div class="cpu-load"></div>
-                            <div class="cpu-global"></div>
-                            <div class="cpu-cores-detail"></div>
+                            {% if initial_data and initial_data.cpu %}
+                                {% set cpuGlobal = initial_data.cpu.cpu ?? null %}
+
+                                {% if cpuGlobal %}
+                                    {# CPU Global avec grosse barre #}
+                                    <div class="cpu-global">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <strong>Utilisation globale</strong>
+                                            <strong>{{ cpuGlobal.percentage }}%</strong>
+                                        </div>
+                                        <div class="progress progress-lg">
+                                            <div class="progress-bar
+                            {% if cpuGlobal.percentage > 90 %}bg-danger
+                            {% elseif cpuGlobal.percentage > 70 %}bg-warning
+                            {% else %}bg-primary{% endif %}"
+                                                 role="progressbar"
+                                                 style="width: {{ cpuGlobal.percentage }}%">
+                                                {{ cpuGlobal.percentage }}%
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Bouton accordéon -->
+                                    <button class="btn-accordion" id="toggle-cpu-details">
+                                        <i class="fas fa-chevron-down"></i> Détails par cœur
+                                    </button>
+
+                                    {# Cœurs individuels #}
+                                    <div class="cpu-details-accordion" id="cpu-details" style="display: none;">
+                                        <small class="text-muted">Détail par cœur :</small>
+                                        {% for core, data in initial_data.cpu %}
+                                            {% if core != 'cpu' %}
+                                                <div class="cpu-core">
+                                                    <div class="d-flex justify-content-between">
+                                                        <small>{{ core|upper }}</small>
+                                                        <small>{{ data.percentage }}%</small>
+                                                    </div>
+                                                    <div class="progress progress-sm">
+                                                        <div class="progress-bar
+                                        {% if data.percentage > 90 %}bg-danger
+                                        {% elseif data.percentage > 70 %}bg-warning
+                                        {% else %}bg-info{% endif %}"
+                                                             role="progressbar"
+                                                             style="width: {{ data.percentage }}%">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-hourglass-half"></i>
+                                        En attente de données (2-3 secondes)...
+                                    </div>
+                                {% endif %}
+
+                                {# Load Average #}
+                                {% if initial_data.load %}
+                                    <div class="mt-3 pt-3 border-top">
+                                        <small class="text-muted">
+                                            <i class="fas fa-chart-line"></i>
+                                            Load: {{ initial_data.load.load1 ?? '0.00' }} /
+                                            {{ initial_data.load.load5 ?? '0.00' }} /
+                                            {{ initial_data.load.load15 ?? '0.00' }}
+                                        </small>
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <div>Chargement...</div>
+                            {% endif %}
                         </div>
                     </div>
 
@@ -62,17 +136,38 @@
                             <h3><i class="fas fa-memory"></i> Mémoire RAM</h3>
                         </div>
                         <div class="widget-content">
-                            <div class="progress-container">
-                                <div class="progress">
-                                    <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                            {% if initial_data and initial_data.memory %}
+                                {% set memory = initial_data.memory %}
+
+                                {# Pourcentage en haut #}
+                                <div class="cpu-global">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <strong>Utilisation</strong>
+                                        <strong>{{ memory.percentage }}%</strong>
+                                    </div>
+
+
+                                    {# Barre de progression #}
+                                    <div class="progress progress-lg mb-2">
+                                        <div class="progress-bar
+                    {% if memory.percentage > 90 %}bg-danger
+                    {% elseif memory.percentage > 70 %}bg-warning
+                    {% else %}bg-success{% endif %}"
+                                             role="progressbar"
+                                             style="width: {{ memory.percentage }}%">
+                                            {{ memory.percentage }}%
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="progress-label">
-                                    <span class="memory-percentage">0%</span>
+
+                                {# Détails en dessous #}
+                                <div class="memory-usage">
+                                    <div>{{ memory.formatted.used }} / {{ memory.formatted.total }}</div>
+                                    <div><small>Disponible: {{ memory.formatted.available }}</small></div>
                                 </div>
-                            </div>
-                            <div class="memory-usage">
+                            {% else %}
                                 <div>Chargement...</div>
-                            </div>
+                            {% endif %}
                         </div>
                     </div>
 
@@ -82,17 +177,38 @@
                             <h3><i class="fas fa-hdd"></i> Espace disque</h3>
                         </div>
                         <div class="widget-content">
-                            <div class="progress-container">
-                                <div class="progress">
-                                    <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                            {% if initial_data and initial_data.disk %}
+                                {% set disk = initial_data.disk %}
+
+                                {# Pourcentage en haut #}
+                                <div class="cpu-global">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <strong>Utilisation</strong>
+                                        <strong>{{ disk.percentage }}%</strong>
+                                    </div>
+
+                                    {# Barre de progression #}
+                                    <div class="progress progress-lg mb-2">
+                                        <div class="progress-bar
+                    {% if disk.percentage > 90 %}bg-danger
+                    {% elseif disk.percentage > 70 %}bg-warning
+                    {% else %}bg-info{% endif %}"
+                                             role="progressbar"
+                                             style="width: {{ disk.percentage }}%">
+                                            {{ disk.percentage }}%
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="progress-label">
-                                    <span class="disk-percentage">0%</span>
+
+                                {# Détails en dessous #}
+                                <div class="disk-usage">
+                                    <div>Utilisé: {{ disk.formatted.used }}</div>
+                                    <div>Libre: {{ disk.formatted.free }}</div>
+                                    <div><small>Total: {{ disk.formatted.total }}</small></div>
                                 </div>
-                            </div>
-                            <div class="disk-usage">
+                            {% else %}
                                 <div>Chargement...</div>
-                            </div>
+                            {% endif %}
                         </div>
                     </div>
 
@@ -102,9 +218,19 @@
                             <h3><i class="fas fa-network-wired"></i> Réseau</h3>
                         </div>
                         <div class="widget-content">
-                            <div class="network-interfaces">
-                                <div>Chargement...</div>
-                            </div>
+                            {% if initial_data and initial_data.network %}
+                                {% for interface, stats in initial_data.network %}
+                                    <div class="network-interface mb-3">
+                                        <strong>{{ interface }}</strong>
+                                        <div class="d-flex justify-content-between mt-1">
+                                            <span>↓ {{ stats.formatted.rx }}</span>
+                                            <span>↑ {{ stats.formatted.tx }}</span>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div>En attente de données...</div>
+                            {% endif %}
                         </div>
                     </div>
 
@@ -117,7 +243,10 @@
                             <div id="system-info">
                                 {% if system_info %}
                                     <div><strong>Serveur:</strong> {{ system_info.hostname }}</div>
-                                    <div><strong>OS:</strong> {{ system_info.os }} ({{ system_info.architecture }})</div>
+                                    <div><strong>OS:</strong> {{ system_info.os }} ({{ system_info.architecture }})
+                                    </div>
+                                    <div><strong>Kernel:</strong> {{ system_info.kernel }}</div>
+                                    <div><strong>Cœurs CPU:</strong> {{ system_info.cpu_cores }}</div>
                                     <div><strong>PHP:</strong> {{ system_info.php_version }}</div>
                                     <div><strong>Uptime:</strong> {{ system_info.uptime }}</div>
                                 {% else %}
@@ -128,29 +257,80 @@
                     </div>
 
                     <!-- Widget Load Average -->
+                    <!-- Widget Load Average -->
                     <div id="load-widget" class="widget">
                         <div class="widget-header">
                             <h3><i class="fas fa-chart-area"></i> Charge système</h3>
                         </div>
                         <div class="widget-content">
-                            <div class="load-averages">
-                                <div class="load-item">
-                                    <span>1 min:</span>
-                                    <span class="load-1min">0.00</span>
+                            {% if initial_data and initial_data.load %}
+                                {% set load = initial_data.load %}
+
+                                <div class="load-item mb-2">
+                                    <div class="d-flex justify-content-between">
+                                        <span>1 min:</span>
+                                        <strong>{{ load.load1 }} ({{ load.load1_percent }}%)</strong>
+                                    </div>
+                                    <div class="progress progress-sm">
+                                        <div class="progress-bar
+                        {% if load.load1_percent > 90 %}bg-danger
+                        {% elseif load.load1_percent > 70 %}bg-warning
+                        {% else %}bg-success{% endif %}"
+                                             style="width: {{ load.load1_percent }}%">
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="load-item">
-                                    <span>5 min:</span>
-                                    <span class="load-5min">0.00</span>
+
+                                <div class="load-item mb-2">
+                                    <div class="d-flex justify-content-between">
+                                        <span>5 min:</span>
+                                        <strong>{{ load.load5 }} ({{ load.load5_percent }}%)</strong>
+                                    </div>
+                                    <div class="progress progress-sm">
+                                        <div class="progress-bar
+                        {% if load.load5_percent > 90 %}bg-danger
+                        {% elseif load.load5_percent > 70 %}bg-warning
+                        {% else %}bg-success{% endif %}"
+                                             style="width: {{ load.load5_percent }}%">
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="load-item">
-                                    <span>15 min:</span>
-                                    <span class="load-15min">0.00</span>
+
+                                <div class="load-item mb-2">
+                                    <div class="d-flex justify-content-between">
+                                        <span>15 min:</span>
+                                        <strong>{{ load.load15 }} ({{ load.load15_percent }}%)</strong>
+                                    </div>
+                                    <div class="progress progress-sm">
+                                        <div class="progress-bar
+                        {% if load.load15_percent > 90 %}bg-danger
+                        {% elseif load.load15_percent > 70 %}bg-warning
+                        {% else %}bg-success{% endif %}"
+                                             style="width: {{ load.load15_percent }}%">
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
+
+                                <div class="mt-3 pt-3 border-top">
+                                    <small class="text-muted">
+                                        Processus: {{ load.running_processes }}/{{ load.total_processes }}
+                                    </small>
+                                </div>
+                            {% else %}
+                                <div>En attente de données...</div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
+    {# Configuration pour le JavaScript #}
+    <script>
+        window.API_BASE_URL = '{{ path('dashboard_api_system_stats') }}';
+    </script>
+    {# Passer les données initiales au JavaScript #}
+    <script>
+        window.initialData = {{ initial_data|json_encode|raw }};
+    </script>
 {% endblock %}
