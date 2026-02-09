@@ -377,7 +377,7 @@ class SystemMonitoringService
     }
 
     // Formatage bytes → KB/MB/GB
-    private function formatBytes(int $bytes): string
+    public function formatBytes(int $bytes): string
     {
         if ($bytes === 0) return '0 B';
 
